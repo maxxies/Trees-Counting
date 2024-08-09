@@ -100,3 +100,14 @@ class TreeDataset(Dataset):
         return transforms.Compose([
             transforms.ToPureTensor(dtype=torch.float32, scale=True)
         ])
+    
+    def collate_fn(batch):
+        """Collate function to be used in the DataLoader.
+
+        Args:
+            batch (list): List of tuples containing the image and target.
+
+        Returns:
+            list: List of images and targets.
+        """
+        return list(zip(*batch))

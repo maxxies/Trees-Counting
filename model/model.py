@@ -1,5 +1,4 @@
 # class to load faster r cnn model for fine tuning
-import torch
 from torchvision.models import detection
 
 class Model:
