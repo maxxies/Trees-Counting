@@ -1,72 +1,102 @@
 import pandas as pd
 import os
 import torch
-from torch.utils.data import Dataset 
+from torch.utils.data import Dataset
 from torchvision.io import read_image
 from torchvision import tv_tensors
 from torchvision.transforms.v2 import functional as F
+from torchvision import transforms
 
-
-class TrainingDataSet(Dataset):
+class TreeDataset(Dataset):
     """Dataset class for loading train images from a folder structure.
 
     Attributes:
         data_dir (str): The directory where the image folders are located.
-        annotation_df (Dataframe): Dataframe of annotations of the images loaded.
+        annotation_df (DataFrame): DataFrame of annotations of the images loaded.
         transform (transforms.Compose): Transformations to be applied to the images.
         imgs (list): List of paths of images in the data directory.
     """
-    def __init__(self, data_dir, annotation, image_transform):
+    def __init__(self, data_dir: str, annotation: str, image_transform: transforms.Compose | None = None):
         """Initializes the dataset class with the given parameters.
 
         Args:
             data_dir (str): The directory where the image folders are located.
             annotation (str): The path to the annotations of the images.
-            image_transform (transforms.Compose): Transformations to be applied to the images.
+            image_transform (transforms.Compose, optional): Transformations to be applied to the images.
         """
         self.data_dir = data_dir
         self.annotation_df = pd.read_csv(annotation)
         self.transform = image_transform
-        self.imgs = sorted(os.listdir(self.data_dir))    # load all image files, sorting them to ensure that they are aligned
+        self.imgs = sorted(os.listdir(self.data_dir))  # Load all image files, sorting them to ensure they are aligned
+        self.filter_dataset()
 
 
     def __getitem__(self, idx):
-        """Samples an image and return the transformed image and an object containing bounding box and transformed label.
+        """Samples an image and returns the transformed image and an object containing bounding box and transformed label.
 
         Args:
-            idx (int): Index used for sampling an image and their label
+            idx (int): Index used for sampling an image and their label.
 
         Returns:
             img (Tensor): Transformed image.
             target (dict): Object containing the bounding box details and label of the transformed image.
         """
-        # load all images 
+        # Load image path
         img_path = os.path.join(self.data_dir, self.imgs[idx])
-        bbox = (self.annotation_df[self.annotation_df['img_id'] == self.imgs[idx]][['xmin','ymin','xmax','ymax']]).values[0]
-        label = [1]
-        label = torch.tensor(labels, dtype=torch.int64)
 
+        # Read the image
         img = read_image(img_path)
 
-        # Wrap sample and targets into torchvision tv_tensors
+        # Get bounding box and label for the current image
+        annotations = self.annotation_df[self.annotation_df['filename'] == self.imgs[idx]]
+        bboxes = annotations[['xmin', 'ymin', 'xmax', 'ymax']].values
+        bboxes =  torch.tensor(bboxes, dtype=torch.float32)
+        labels = annotations['class'].apply(lambda x: 0 if x == 'Palm' else 1).values
+        labels = torch.tensor(labels, dtype=torch.int64)
+
+        # Wrap image into torchvision tv_tensors
         img = tv_tensors.Image(img)
 
-        # Create a target dictionary containing the bounding boxes and labels
-        target = {}
-        target["boxes"] = tv_tensors.BoundingBoxes(bbox, format="XYXY", canvas_size=F.get_size(img))
-        target["labels"] = labels
+        # Create a target dictionary to contain the bounding boxes and labels
+        target = {
+            "boxes": bboxes,
+            "labels": labels
+        }
 
-        if self.transforms is not None:
-            img, target = self.transforms(img, target)
+        # Apply transformations if available
+        if self.transform is not None:
+            img, target = self.transform(img, target)
 
         return img, target
 
     def __len__(self):
+        """Returns the total size of the data."""
         return len(self.imgs)
+    
+    def filter_dataset(self):
+        """Filter the dataset by removing images with no labels and incorrect bounding boxes."""
+        self.annotation_df = self.annotation_df[self.annotation_df['class'].notnull()]
+        self.annotation_df = self.annotation_df[self.annotation_df['xmin'] < self.annotation_df['xmax']]
+        self.annotation_df = self.annotation_df[self.annotation_df['ymin'] < self.annotation_df['ymax']]
 
-    def __matrix__(self,idx):
-        img_path = os.path.join(self.img_paths, self.imgs[idx])
-        img = read_image(img_path)
+        # Filter out images with no annotations
+        valid_filenames = self.annotation_df['filename'].unique()
+        self.imgs = [img for img in self.imgs if img in valid_filenames]
 
-        # Return the dimensions of the image (height, width, number of channels)
-        return len(img),len(img[0]),len(img[0][0])
+    def get_transform(train: bool):
+        """Returns the transformations to be applied to the images.
+
+        Args:
+            train (bool): If True, apply training transformations. Otherwise, apply test transformations.
+
+        Returns:
+            transforms.Compose: The transformations to be applied to the images.
+        """
+        if train:
+            return transforms.Compose([
+                transforms.RandomHorizontalFlip(0.5),
+                transforms.ToPureTensor(dtype=torch.float32, scale=True)
+            ])
+        return transforms.Compose([
+            transforms.ToPureTensor(dtype=torch.float32, scale=True)
+        ])
