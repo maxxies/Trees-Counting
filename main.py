@@ -9,7 +9,7 @@ from utils.config import Config
 from utils.trainer import Trainer
 from utils.logger import get_logger
 
-def main(woriking_dir: str):
+def main(woriking_dir: str, epochs: int):
     """Main function to run the training.
     
     Args:
@@ -45,7 +45,7 @@ def main(woriking_dir: str):
             },
         },
         "trainer": {
-            "epochs": 50,
+            "epochs": f'{epochs}',
             "log_step": 1700,
             "save_dir": "saved/",
             "save_period": 50,
@@ -88,8 +88,7 @@ def main(woriking_dir: str):
         "wandb": {
             "architecture":"WaveletCNN",
             "dataset": "Palm Tree Dataset",
-            "epochs":f'{cfg["trainer"]["epochs"]}',
-            "learning rate": f'{cfg["optimizer"]["args"]["lr"]}',           
+            "epochs":f'{epochs}',
         }
     }
 
