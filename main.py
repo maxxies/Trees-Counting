@@ -85,7 +85,7 @@ def main(working_dir: str, epochs: int):
             }
         },
         "wandb": {
-            "architecture":"WaveletCNN",
+            "architecture":"FasterRCNN",
             "dataset": "Palm Tree Dataset",
             "epochs": epochs,
         }

@@ -102,15 +102,19 @@ class TreeDataset(Dataset):
         Returns:
             transforms.Compose: The transformations to be applied to the images.
         """
+        transforms = []
+
+        # If training, add a random horizontal flip transformation with a probability of 0.5
         if train:
-            return transforms.Compose([
-                transforms.RandomHorizontalFlip(0.5),
-                T.ToDtype(torch.float, scale=True),
-                T.ToPureTensor()
-            ])
-        return transforms.Compose([
-            T.ToPureTensor()
-        ])
+            transforms.append(T.RandomHorizontalFlip(0.5))
+
+        # Convert the image to a float tensor and scale image
+        transforms.append(T.ToDtype(torch.float, scale=True))
+
+        # Convert the image to a pure tensor
+        transforms.append(T.ToPureTensor())
+
+        return T.Compose(transforms)
     
     def collate_fn(batch):
         """Collate function to be used in the DataLoader.

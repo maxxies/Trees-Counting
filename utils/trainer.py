@@ -234,9 +234,13 @@ class Trainer:
         model_dir.mkdir(parents=True, exist_ok=True)
         model_path = model_dir / f"{metric_name}.pth"
         torch.save(self.model, model_path)
+        
+        # Save the model as an artifact
+        artifact = wandb.Artifact("model", type="model")
+        artifact.add_file(model_path)
+        wandb.log_artifact(artifact)
         self.logger.info(f"Model saved at {model_path}")
         
-        wandb.save(str(model_path))
         return model_path
 
     def load_model(self, model_path: str):
