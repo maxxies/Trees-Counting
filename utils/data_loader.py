@@ -5,7 +5,7 @@ import torch
 from torch.utils.data import Dataset
 from torchvision.io import read_image
 from torchvision import tv_tensors
-from torchvision.transforms.v2 import functional as F
+from torchvision.transforms import v2 as T
 from torchvision import transforms
 
 class TreeDataset(Dataset):
@@ -47,6 +47,8 @@ class TreeDataset(Dataset):
 
         # Read the image
         img = read_image(img_path)
+        img = img.float() / 255.0
+
 
         # Get bounding box and label for the current image
         annotations = self.annotation_df[self.annotation_df['filename'] == self.imgs[idx]]
@@ -103,10 +105,11 @@ class TreeDataset(Dataset):
         if train:
             return transforms.Compose([
                 transforms.RandomHorizontalFlip(0.5),
-                transforms.ToPureTensor(dtype=torch.float32, scale=True)
+                T.ToDtype(torch.float, scale=True),
+                T.ToPureTensor()
             ])
         return transforms.Compose([
-            transforms.ToPureTensor(dtype=torch.float32, scale=True)
+            T.ToPureTensor()
         ])
     
     def collate_fn(batch):

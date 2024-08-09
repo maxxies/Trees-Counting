@@ -29,6 +29,7 @@ class Trainer:
         model: torch.nn.Module,
         device: torch.device,
         optimizer: torch.optim.Optimizer,
+        lr_scheduler: torch.optim.lr_scheduler,
         train_loader: torch.utils.data.DataLoader,
         val_loader: torch.utils.data.DataLoader,
         test_loader: torch.utils.data.DataLoader,
@@ -48,12 +49,13 @@ class Trainer:
         self.model = model
         self.device = device
         self.optimizer = optimizer
+        self.lr_scheduler = lr_scheduler
         self.train_loader = train_loader
         self.val_loader = val_loader
         self.test_loader = test_loader
         self.config = config
         self.logger = get_logger(
-            name="trainer", verbosity=config.trainer.verbosity
+            name="trainer", verbosity=config["trainer"]["verbosity"]
         )
         self.start_epoch = 0
         self.best_map = 0.0
@@ -64,7 +66,7 @@ class Trainer:
 
     def train(self):
         """Train the model."""
-        for epoch in range(self.start_epoch, self.config.trainer.epochs):
+        for epoch in range(self.start_epoch, self.config["trainer"]["epochs"]):
             self.model.train()
             train_loss = 0.0
             for images, targets in self.train_loader:
@@ -78,6 +80,8 @@ class Trainer:
                 self.optimizer.step()
                 
                 train_loss += losses.item()
+            
+            self.lr_scheduler.step()
             
             train_loss /= len(self.train_loader)
             wandb.log({"Train/Loss": train_loss, "epoch": epoch})
@@ -226,7 +230,7 @@ class Trainer:
 
     def save_model(self, metric_name: str):
         """Save the model."""
-        model_dir = self.config.save_dir / "models"
+        model_dir = self.config["save_dir"] + "models"
         model_dir.mkdir(parents=True, exist_ok=True)
         model_path = model_dir / f"{metric_name}.pth"
         torch.save(self.model, model_path)
