@@ -5,6 +5,7 @@ from torchvision.ops import box_iou
 from torchmetrics.detection import MeanAveragePrecision
 from sklearn.metrics import  accuracy_score
 import wandb
+from datetime import datetime
 
 class Trainer:
     """Class to train Faster R-CNN model with PyTorch.
@@ -58,7 +59,7 @@ class Trainer:
         self.best_map = 0.0
 
         # Initialize wandb
-        wandb.init(project=config["main"]["name"], config=config["wandb"])
+        wandb.init(project="counting-trees", name=f"Model:{datetime.now().strftime('%d-%B-%Y-%I%p')}", config=config["wandb"])
         wandb.watch(self.model)
 
     def train(self):

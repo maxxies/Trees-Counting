@@ -1,6 +1,7 @@
 import numpy as np
 import sys
 import torch
+import datetime
 from torch.utils.data import Subset, DataLoader
 from model.model import Model
 from utils.data_loader import TreeDataset
@@ -85,12 +86,14 @@ def main(woriking_dir: str):
             }
         },
         "wandb": {
-            "log_config": True,
-            "sync_tensorboard": True,
-            "reinit": True,
+            "architecture":"WaveletCNN",
+            "dataset": "Palm Tree Dataset",
+            "epochs":f'{cfg["trainer"]["epochs"]}',
+            "learning rate": f'{cfg["optimizer"]["args"]["lr"]}',           
         }
     }
 
+    cfg = Config(cfg)
         
     # Set seed
     seed = cfg.main.seed
@@ -142,7 +145,6 @@ def main(woriking_dir: str):
         logger.info(f"Size of Parameters: {total_params_size / (1024 ** 3):.2f} GB")
 
     # Initialize the trainer
-    cfg = Config(cfg)
 
     trainer = Trainer(
         model=model,
