@@ -1,5 +1,6 @@
 import pandas as pd
 import os
+import cv2
 import torch
 from torch.utils.data import Dataset
 from torchvision.io import read_image
@@ -72,6 +73,13 @@ class TreeDataset(Dataset):
     def __len__(self):
         """Returns the total size of the data."""
         return len(self.imgs)
+    
+    def __image__(self, idx):
+        """Returns the image without any transformations."""
+        img_path = os.path.join(self.img_paths, self.imgs[idx])
+
+        img = cv2.imread(img_path)
+        return img
     
     def filter_dataset(self):
         """Filter the dataset by removing images with no labels and incorrect bounding boxes."""

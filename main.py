@@ -8,7 +8,12 @@ from utils.config import Config
 from utils.trainer import Trainer
 from utils.logger import get_logger
 
-def main():
+def main(woriking_dir: str):
+    """Main function to run the training.
+    
+    Args:
+        woriking_dir (str): The working directory where the data is stored.
+    """
     # Define configurations
     cfg = {
         "main": {
@@ -17,10 +22,10 @@ def main():
             "verbosity": 0,
         },
         "data": {
-            "train_images_path": "data/train/",
-            "test_images_path": "data/test/",
-            "train_labels_path": "data/train_labels.csv",
-            "test_labels_path": "data/test_labels.csv",
+            "train_images_path": f"{woriking_dir}/train/",
+            "test_images_path": f"{woriking_dir}/test/",
+            "train_labels_path": f"{woriking_dir}/train_labels.csv",
+            "test_labels_path": f"{woriking_dir}/test_labels.csv",
             "test_size": 0.2,
             "num_classes": 3, # 3 classes: background, tree, and palm tree
             "batch_size": 16,
@@ -138,7 +143,7 @@ def main():
 
     # Initialize the trainer
     cfg = Config(cfg)
-    
+
     trainer = Trainer(
         model=model,
         device=device,

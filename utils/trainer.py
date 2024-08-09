@@ -133,7 +133,11 @@ class Trainer:
         return map_score
 
     def test(self):
-        """Test the model."""
+        """Test the model.
+        
+        Returns:
+            List[Dict]: A list containing the model predictions.
+        """
         self.model.eval()
         test_loss = 0.0
         all_predictions = []
@@ -170,6 +174,8 @@ class Trainer:
         
         self.logger.info(f"Test mAP: {map_score:.4f}, Accuracy: {accuracy:.4f}, "
                          f"Precision: {precision:.4f}, Recall: {recall:.4f}, F1: {f1:.4f}")
+        
+        return all_predictions
 
     def calculate_metrics(self, predictions, targets, iou_threshold=0.5):
         """Calculate mAP, accuracy, precision, recall, and F1 score."""

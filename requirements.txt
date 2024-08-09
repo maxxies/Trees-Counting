@@ -1,4 +1,7 @@
 torch
+torchvision
 torchmetrics
+pandas
 wandb
 sklearn
+opencv-python
