@@ -7,7 +7,21 @@ from sklearn.metrics import  accuracy_score
 import wandb
 
 class Trainer:
-    """Class to train Faster R-CNN model with PyTorch."""
+    """Class to train Faster R-CNN model with PyTorch.
+    
+    Attributes:
+        model (torch.nn.Module): The model to train.
+        device (torch.device): The device to train the model on.
+        optimizer (torch.optim.Optimizer): The optimizer to use.
+        train_loader (torch.utils.data.DataLoader): The training data loader.
+        val_loader (torch.utils.data.DataLoader): The validation data loader.
+        test_loader (torch.utils.data.DataLoader): The test data loader.
+        config (Config): The configuration object.
+        logger (logging.Logger): The logger object.
+        start_epoch (int): The starting epoch number.
+        best_map (float): The best mAP score.
+   
+    """
 
     def __init__(
         self,
@@ -19,7 +33,17 @@ class Trainer:
         test_loader: torch.utils.data.DataLoader,
         config: Config,
     ):
-        """Initialize the Trainer object."""
+        """Initialize the Trainer object.
+        
+        Args:
+            model (torch.nn.Module): The model to train.
+            device (torch.device): The device to train the model on.
+            optimizer (torch.optim.Optimizer): The optimizer to use.
+            train_loader (torch.utils.data.DataLoader): The training data loader.
+            val_loader (torch.utils.data.DataLoader): The validation data loader.
+            test_loader (torch.utils.data.DataLoader): The test data loader.
+            config (Config): The configuration object
+        """
         self.model = model
         self.device = device
         self.optimizer = optimizer
@@ -63,6 +87,8 @@ class Trainer:
             if val_map > self.best_map:
                 self.best_map = val_map
                 self.save_model(epoch, val_map, "best_map")
+
+        self.logger.info(f"Training finished. Best mAP: {self.best_map:.4f}")   
 
     def validate(self, epoch: int):
         """Validate the model."""

@@ -137,16 +137,17 @@ def main():
         logger.info(f"Size of Parameters: {total_params_size / (1024 ** 3):.2f} GB")
 
     # Initialize the trainer
-    # trainer = Trainer(
-    #     config=cfg,
-    #     device=device,
-    #     model=model,
-    #     optimizer=optimizer,
-    #     criterion=criterion,
-    #     metric_fns=metrics,
-    #     lr_scheduler=lr_scheduler,
-    #     train_data_loader=train_loader,
-    #     valid_data_loader=val_loader,
-    # )
+    cfg = Config(cfg)
+    
+    trainer = Trainer(
+        model=model,
+        device=device,
+        optimizer=optimizer,
+        lr_scheduler=lr_scheduler,
+        train_loader=train_loader,
+        val_loader=val_loader,
+        test_loader=test_loader,
+        config=cfg,
+    )
 
-    # trainer.train()
+    trainer.train()
