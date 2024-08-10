@@ -8,6 +8,7 @@ from utils.data_loader import TreeDataset
 from utils.config import Config
 from utils.trainer import Trainer
 from utils.logger import get_logger
+from utils.visualisations import plot_sample_images
 
 def run(working_dir: str, epochs: int):
     """Main function to run the training.
@@ -113,6 +114,9 @@ def run(working_dir: str, epochs: int):
     train_loader = DataLoader(train_dataset, batch_size=cfg.config["data"]["batch_size"], shuffle=True,  collate_fn=TreeDataset.collate_fn)
     val_loader = DataLoader(val_dataset, batch_size=cfg.config["data"]["batch_size"], shuffle=False,  collate_fn=TreeDataset.collate_fn)
     test_loader = DataLoader(test_dataset, batch_size=cfg.config["data"]["batch_size"], shuffle=False,  collate_fn=TreeDataset.collate_fn)
+   
+    # Plot sample images
+    plot_sample_images(train_loader)
 
     # Build model architecture
     model = Model(cfg.config["data"]["num_classes"]).get_model()
@@ -157,7 +161,7 @@ def run(working_dir: str, epochs: int):
     trainer.train()
 
     # Test the model
-    predictions = trainer.test()
+    predictions, targets = trainer.test()
 
     # Return the test dataset and predictions
-    return test_dataset, predictions
+    return test_dataset, predictions, targets

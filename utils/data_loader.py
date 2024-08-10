@@ -7,6 +7,8 @@ from torchvision.io import read_image
 from torchvision import tv_tensors
 from torchvision.transforms import v2 as T
 from torchvision import transforms
+from torchvision.transforms.v2 import functional as F
+
 
 class TreeDataset(Dataset):
     """Dataset class for loading train images from a folder structure.
@@ -47,13 +49,12 @@ class TreeDataset(Dataset):
 
         # Read the image
         img = read_image(img_path)
-        img = img.float() / 255.0
 
 
         # Get bounding box and label for the current image
         annotations = self.annotation_df[self.annotation_df['filename'] == self.imgs[idx]]
         bboxes = annotations[['xmin', 'ymin', 'xmax', 'ymax']].values
-        bboxes =  torch.tensor(bboxes, dtype=torch.float32)
+        bboxes =  tv_tensors.BoundingBoxes(bboxes, format="XYXY", canvas_size=F.get_size(img))
         labels = annotations['class'].apply(lambda x: 0 if x == 'Palm' else 1).values
         labels = torch.tensor(labels, dtype=torch.int64)
 
@@ -78,9 +79,9 @@ class TreeDataset(Dataset):
     
     def __image__(self, idx):
         """Returns the image without any transformations."""
-        img_path = os.path.join(self.img_paths, self.imgs[idx])
-
+        img_path = os.path.join(self.data_dir, self.imgs[idx])
         img = cv2.imread(img_path)
+
         return img
     
     def filter_dataset(self):

@@ -6,6 +6,7 @@ from torchmetrics.detection import MeanAveragePrecision
 from sklearn.metrics import  accuracy_score
 import wandb
 from datetime import datetime
+import time
 
 class Trainer:
     """Class to train Faster R-CNN model with PyTorch.
@@ -69,12 +70,20 @@ class Trainer:
         for epoch in range(self.start_epoch, self.config["trainer"]["epochs"]):
             self.model.train()
             train_loss = 0.0
+            start_time = time.time()
             for images, targets in self.train_loader:
                 images = [image.to(self.device) for image in images]
                 targets = [{k: v.to(self.device) for k, v in t.items()} for t in targets]
                 
                 self.optimizer.zero_grad()
                 loss_dict = self.model(images, targets)
+
+                # Get all losses
+                loss_box_reg = loss_dict["loss_box_reg"]
+                loss_classifier = loss_dict["loss_classifier"]
+                loss_objectness = loss_dict["loss_objectness"]
+                loss_rpn_box_reg = loss_dict["loss_rpn_box_reg"]
+
                 losses = sum(loss for loss in loss_dict.values())
                 losses.backward()
                 self.optimizer.step()
@@ -82,60 +91,83 @@ class Trainer:
                 train_loss += losses.item()
             
             self.lr_scheduler.step()
+            end_time = time.time()
+
+            epoch_time = end_time - start_time
             
             train_loss /= len(self.train_loader)
-            wandb.log({"Train/Loss": train_loss, "epoch": epoch})
-            self.logger.info(f"Epoch {epoch}: Train Loss: {train_loss:.4f}")
+
+            metrics = {
+                "Train/Loss": val_loss,
+                "Train/loss_box_reg": loss_box_reg,
+                "Train/loss_classifier": loss_classifier,
+                "Train/loss_objectness": loss_objectness,
+                "Train/loss_rpn_box_reg": loss_rpn_box_reg,
+            }
+            wandb.log({metrics})
             
-            val_map = self.validate(epoch)
+            val_loss, val_map = self.validate(epoch)
             
             if val_map > self.best_map:
                 self.best_map = val_map
-                self.save_model(epoch, val_map, "best_map")
+                self.save_model("best_model")
+
+            self.logger.info(f"Epoch: {epoch} Train Loss: {train_loss:.4f} Validation Loss: {val_loss:.4f} Validation mAP: {val_map:.4f} Time Elapsed: {int(epoch_time // 3600):02d}:{int((epoch_time % 3600) // 60):02d}:{int(epoch_time % 60):02d}")
 
         self.logger.info(f"Training finished. Best mAP: {self.best_map:.4f}")   
 
     def validate(self, epoch: int):
-        """Validate the model."""
-        self.model.eval()
-        val_loss = 0.0
-        all_predictions = []
-        all_targets = []
-        
-        with torch.no_grad():
+            """Validate the model."""
+            self.model.eval()
+            val_loss = 0.0
+            all_predictions = []
+            all_targets = []
+            
             for images, targets in self.val_loader:
                 images = [image.to(self.device) for image in images]
                 targets = [{k: v.to(self.device) for k, v in t.items()} for t in targets]
-                
+
                 loss_dict = self.model(images, targets)
-                losses = sum(loss for loss in loss_dict.values())
-                val_loss += losses.item()
+
+                # Get all losses
+                loss_box_reg = loss_dict["loss_box_reg"]
+                loss_classifier = loss_dict["loss_classifier"]
+                loss_objectness = loss_dict["loss_objectness"]
+                loss_rpn_box_reg = loss_dict["loss_rpn_box_reg"]
+
                 
+                losses = sum(loss for loss in loss_dict.values())   # Total loss
+                val_loss += losses.item()
+
+                # Only get predictions
                 predictions = self.model(images)
-                all_predictions.extend(predictions)
-                all_targets.extend(targets)
+                
+                preds = [
+                    {"boxes": out["boxes"], "scores": out["scores"], "labels": out["labels"]} for out in predictions
+                ]
+                targs = [
+                    {"boxes": tgt["boxes"], "labels": tgt["labels"]} for tgt in targets
+                ]
 
-        val_loss /= len(self.val_loader)
-        wandb.log({"Validation/Loss": val_loss, "epoch": epoch})
-        self.logger.info(f"Epoch {epoch}: Validation Loss: {val_loss:.4f}")
+                all_predictions.extend(preds)
+                all_targets.extend(targs)
 
-        # Calculate metrics
-        map_score, accuracy, precision, recall, f1 = self.calculate_metrics(all_predictions, all_targets)
-        
-        metrics = {
-            "Validation/mAP": map_score,
-            "Validation/Accuracy": accuracy,
-            "Validation/Precision": precision,
-            "Validation/Recall": recall,
-            "Validation/F1": f1,
-            "epoch": epoch
-        }
-        wandb.log(metrics)
-        
-        self.logger.info(f"Epoch {epoch}: Validation mAP: {map_score:.4f}, Accuracy: {accuracy:.4f}, "
-                         f"Precision: {precision:.4f}, Recall: {recall:.4f}, F1: {f1:.4f}")
-        
-        return map_score
+            val_loss /= len(self.val_loader)
+
+            # Calculate metrics
+            map_score = self.calculate_map(all_predictions, all_targets, "Validation")
+            
+            metrics = {
+                "Validation/Loss": val_loss,
+                "Validation/loss_box_reg": loss_box_reg,
+                "Validation/loss_classifier": loss_classifier,
+                "Validation/loss_objectness": loss_objectness,
+                "Validation/loss_rpn_box_reg": loss_rpn_box_reg,
+            }
+            
+            wandb.log(metrics)
+
+            return val_loss, map_score
 
     def test(self):
         """Test the model.
@@ -144,7 +176,6 @@ class Trainer:
             List[Dict]: A list containing the model predictions.
         """
         self.model.eval()
-        test_loss = 0.0
         all_predictions = []
         all_targets = []
         
@@ -153,86 +184,44 @@ class Trainer:
                 images = [image.to(self.device) for image in images]
                 targets = [{k: v.to(self.device) for k, v in t.items()} for t in targets]
                 
-                loss_dict = self.model(images, targets)
-                losses = sum(loss for loss in loss_dict.values())
-                test_loss += losses.item()
                 
+                # Only get predictions
                 predictions = self.model(images)
-                all_predictions.extend(predictions)
-                all_targets.extend(targets)
-
-        test_loss /= len(self.test_loader)
-        wandb.log({"Test/Loss": test_loss})
-        self.logger.info(f"Test Loss: {test_loss:.4f}")
-
-        # Calculate metrics
-        map_score, accuracy, precision, recall, f1 = self.calculate_metrics(all_predictions, all_targets)
-        
-        metrics = {
-            "Test/mAP": map_score,
-            "Test/Accuracy": accuracy,
-            "Test/Precision": precision,
-            "Test/Recall": recall,
-            "Test/F1": f1
-        }
-        wandb.log(metrics)
-        
-        self.logger.info(f"Test mAP: {map_score:.4f}, Accuracy: {accuracy:.4f}, "
-                         f"Precision: {precision:.4f}, Recall: {recall:.4f}, F1: {f1:.4f}")
-        
-        return all_predictions
-
-    def calculate_metrics(self, predictions, targets, iou_threshold=0.5):
-        """Calculate mAP, accuracy, precision, recall, and F1 score."""
-        true_positives = 0
-        false_positives = 0
-        false_negatives = 0
-        all_pred_labels = []
-        all_true_labels = []
-        
-        for pred, target in zip(predictions, targets):
-            pred_boxes = pred['boxes']
-            pred_labels = pred['labels']
-            pred_scores = pred['scores']
-            
-            target_boxes = target['boxes']
-            target_labels = target['labels']
-            
-            iou = box_iou(pred_boxes, target_boxes)
-            max_iou, max_idx = iou.max(dim=1)
-            
-            for i, (iou_val, pred_label, pred_score) in enumerate(zip(max_iou, pred_labels, pred_scores)):
-                all_pred_labels.append(pred_label.item())
-                true_label = target_labels[max_idx[i]].item()
-                all_true_labels.append(true_label)
                 
-                if iou_val >= iou_threshold and pred_label == true_label:
-                    true_positives += 1
-                else:
-                    false_positives += 1
-            
-            false_negatives += len(target_boxes) - true_positives
+                preds = [
+                    {"boxes": out["boxes"], "scores": out["scores"], "labels": out["labels"]} for out in predictions
+                ]
+                targs = [
+                    {"boxes": tgt["boxes"], "labels": tgt["labels"]} for tgt in targets
+                ]
 
-        precision = true_positives / (true_positives + false_positives + 1e-6)
-        recall = true_positives / (true_positives + false_negatives + 1e-6)
-        f1 = 2 * (precision * recall) / (precision + recall + 1e-6)
+                all_predictions.extend(preds)
+                all_targets.extend(targs)
+                
+        # Calculate metrics
+        map_score = self.calculate_map(all_predictions, all_targets, "Test")
+                
+        self.logger.info(f"Test mAP: {map_score:.4f}")
         
-        # Calculate accuracy
-        accuracy = accuracy_score(all_true_labels, all_pred_labels)
-        
+        return all_predictions, all_targets
+
+   
+    def calculate_map(self, predictions, targets, eval_type,  iou_threshold=0.5):
+        """Calculate mAP."""
+
         # Calculate mAP 
-        map_score = MeanAveragePrecision(iou_type="bbox")
-        map_score.update(predictions, target)
-        map = map_score.compute()
+        map_metric = MeanAveragePrecision(iou_type="bbox")
+        map_metric.update(predictions, targets)
+        map_results = map_metric.compute()
 
-    
-        return map, accuracy, precision, recall, f1
+        for k, v in map_results.items():
+            wandb.log({f"{eval_type}/mAP/{k}": v} )
+
+        return map_results["map"]
 
     def save_model(self, metric_name: str):
         """Save the model."""
-        model_dir = self.config["save_dir"] + "models"
-        model_dir.mkdir(parents=True, exist_ok=True)
-        model_path = model_dir / f"{metric_name}.pth"
+        model_path = self.config["trainer"]["save_dir"] + f"models/{metric_name}.pth"
         torch.save(self.model, model_path)
         
         # Save the model as an artifact
@@ -252,3 +241,5 @@ class Trainer:
     def __del__(self):
         """Finish the wandb run when the Trainer object is deleted."""
         wandb.finish()
+
+    
