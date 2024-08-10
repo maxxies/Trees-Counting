@@ -100,6 +100,8 @@ def run(working_dir: str, epochs: int):
     torch.backends.cudnn.deterministic = True
     torch.backends.cudnn.benchmark = False
     np.random.seed(seed)
+    logger = get_logger(name="program", verbosity=cfg.config["main"]["verbosity"])
+
 
     # Set device
     device = torch.device("cuda" if cfg.config["main"]["cuda"] and torch.cuda.is_available() else "cpu")
@@ -116,6 +118,7 @@ def run(working_dir: str, epochs: int):
     test_loader = DataLoader(test_dataset, batch_size=cfg.config["data"]["batch_size"], shuffle=False,  collate_fn=TreeDataset.collate_fn)
    
     # Plot sample images
+    logger.info("Plotting sample images")
     plot_sample_images(train_loader)
 
     # Build model architecture
@@ -130,7 +133,6 @@ def run(working_dir: str, epochs: int):
     lr_scheduler = getattr(torch.optim.lr_scheduler, cfg.config["lr_scheduler"]["type"])(optimizer, **cfg.config["lr_scheduler"]["args"])
 
     # Log all the details
-    logger = get_logger(name="program", verbosity=cfg.config["main"]["verbosity"])
     logger.info(f"Using device: {device}")
     logger.info(f"Model set up: {type(model).__name__}")
     logger.info(f"Trainable parameters: {sum(p.numel() for p in model.parameters() if p.requires_grad)}")
