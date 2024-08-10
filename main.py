@@ -31,7 +31,7 @@ def run(working_dir: str, epochs: int):
             "test_labels_path": f"{working_dir}/test_labels.csv",
             "test_size": 0.2,
             "num_classes": 3, # 3 classes: background, tree, and palm tree
-            "batch_size": 16,
+            "batch_size": 8,
         },
         "optimizer": {
             "type": "SGD",

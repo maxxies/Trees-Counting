@@ -1,9 +1,6 @@
-# create a function to take only a dataloader and plot a sample of images with their bounding boxes and labels.
 import matplotlib.pyplot as plt
 import matplotlib.patches as patches
 import torch
-from torchvision import transforms
-
 
 def plot_sample_images(dataloader, num_images=4):
     """Plot a sample of images with their bounding boxes and labels.
@@ -18,11 +15,10 @@ def plot_sample_images(dataloader, num_images=4):
 
     # Get a batch of data
     for i, (img, target) in enumerate(dataloader):
-
-        # Get the image and target
-        img = img[0].permute(1, 2, 0).numpy()
-        boxes = target[0]['boxes']
-        labels = target[0]['labels']
+        # Move image and target to CPU to avoid GPU memory issues
+        img = img[0].cpu().permute(1, 2, 0).numpy()
+        boxes = target[0]['boxes'].cpu()
+        labels = target[0]['labels'].cpu()
 
         # Plot the image
         axes[i].imshow(img)
