@@ -119,7 +119,7 @@ def run(working_dir: str, epochs: int):
    
     # Plot sample images
     logger.info("Plotting sample images")
-    plot_sample_images(train_loader)
+    plot_sample_images(train_loader, num_images=6)
 
     # Build model architecture
     model = Model(cfg.config["data"]["num_classes"]).get_model()

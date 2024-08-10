@@ -104,7 +104,7 @@ class Trainer:
                 "Train/loss_objectness": loss_objectness,
                 "Train/loss_rpn_box_reg": loss_rpn_box_reg,
             }
-            wandb.log({metrics})
+            wandb.log(metrics)
             
             val_loss, val_map = self.validate(epoch)
             
@@ -123,34 +123,37 @@ class Trainer:
             all_predictions = []
             all_targets = []
             
-            for images, targets in self.val_loader:
-                images = [image.to(self.device) for image in images]
-                targets = [{k: v.to(self.device) for k, v in t.items()} for t in targets]
+            with torch.no_grad():
+                for images, targets in self.val_loader:
+                    images = [image.to(self.device) for image in images]
+                    targets = [{k: v.to(self.device) for k, v in t.items()} for t in targets]
 
-                loss_dict = self.model(images, targets)
+                    self.model.train()
+                    loss_dict = self.model(images, targets)
+                    self.model.eval()
 
-                # Get all losses
-                loss_box_reg = loss_dict["loss_box_reg"]
-                loss_classifier = loss_dict["loss_classifier"]
-                loss_objectness = loss_dict["loss_objectness"]
-                loss_rpn_box_reg = loss_dict["loss_rpn_box_reg"]
+                    # Get all losses
+                    loss_box_reg = loss_dict["loss_box_reg"]
+                    loss_classifier = loss_dict["loss_classifier"]
+                    loss_objectness = loss_dict["loss_objectness"]
+                    loss_rpn_box_reg = loss_dict["loss_rpn_box_reg"]
 
-                
-                losses = sum(loss for loss in loss_dict.values())   # Total loss
-                val_loss += losses.item()
+                    
+                    losses = sum(loss for loss in loss_dict.values())   # Total loss
+                    val_loss += losses.item()
 
-                # Only get predictions
-                predictions = self.model(images)
-                
-                preds = [
-                    {"boxes": out["boxes"], "scores": out["scores"], "labels": out["labels"]} for out in predictions
-                ]
-                targs = [
-                    {"boxes": tgt["boxes"], "labels": tgt["labels"]} for tgt in targets
-                ]
+                    # Only get predictions
+                    predictions = self.model(images)
+                    
+                    preds = [
+                        {"boxes": out["boxes"], "scores": out["scores"], "labels": out["labels"]} for out in predictions
+                    ]
+                    targs = [
+                        {"boxes": tgt["boxes"], "labels": tgt["labels"]} for tgt in targets
+                    ]
 
-                all_predictions.extend(preds)
-                all_targets.extend(targs)
+                    all_predictions.extend(preds)
+                    all_targets.extend(targs)
 
             val_loss /= len(self.val_loader)
 

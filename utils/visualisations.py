@@ -1,6 +1,5 @@
 import matplotlib.pyplot as plt
 import matplotlib.patches as patches
-import torch
 
 def plot_sample_images(dataloader, num_images=4):
     """Plot a sample of images with their bounding boxes and labels.
