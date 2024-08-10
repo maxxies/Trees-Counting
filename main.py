@@ -9,7 +9,7 @@ from utils.config import Config
 from utils.trainer import Trainer
 from utils.logger import get_logger
 
-def main(working_dir: str, epochs: int):
+def run(working_dir: str, epochs: int):
     """Main function to run the training.
     
     Args:
@@ -153,4 +153,11 @@ def main(working_dir: str, epochs: int):
         config=cfg.config,
     )
 
+    # Start training
     trainer.train()
+
+    # Test the model
+    predictions = trainer.test()
+
+    # Return the test dataset and predictions
+    return test_dataset, predictions

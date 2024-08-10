@@ -5,7 +5,7 @@ class Model:
 
     def __init__(self, num_classes: int, pretrained: bool = True):
         """Initialize the model with the number of classes."""
-        self.model = detection.fasterrcnn_resnet50_fpn(pretrained=pretrained)
+        self.model = detection.fasterrcnn_resnet50_fpn(weights=pretrained)
 
         # get number of input features for the classifier
         in_features = self.model.roi_heads.box_predictor.cls_score.in_features
