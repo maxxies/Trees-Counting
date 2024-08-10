@@ -98,7 +98,7 @@ class Trainer:
             train_loss /= len(self.train_loader)
 
             metrics = {
-                "Train/Loss": val_loss,
+                "Train/Loss": train_loss,
                 "Train/loss_box_reg": loss_box_reg,
                 "Train/loss_classifier": loss_classifier,
                 "Train/loss_objectness": loss_objectness,

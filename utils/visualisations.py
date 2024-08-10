@@ -8,7 +8,7 @@ def plot_sample_images(dataloader, num_images=4):
     Args:
         dataloader (torch.utils.data.DataLoader): The dataloader containing the images and labels.
     """
-    colors = ['r', 'g']
+    colors = ['r', 'b']
     # Create a figure
     fig, axes = plt.subplots(2, 2, figsize=(15, 15))
     axes = axes.ravel()
