@@ -56,13 +56,13 @@ class Trainer:
         self.config = config.config
         self.save_dir = config.save_dir
         self.logger = get_logger(
-            name="trainer", verbosity=config["trainer"]["verbosity"]
+            name="trainer", verbosity=config.config["trainer"]["verbosity"]
         )
         self.start_epoch = 0
         self.best_map = 0.0
 
         # Initialize wandb
-        wandb.init(project="counting-trees", name=f"Model:{datetime.now().strftime('%d-%B-%Y-%I%p')}", config=config["wandb"])
+        wandb.init(project="counting-trees", name=f"Model:{datetime.now().strftime('%d-%B-%Y-%I%p')}", config=config.config["wandb"])
         wandb.watch(self.model)
 
     def train(self):
