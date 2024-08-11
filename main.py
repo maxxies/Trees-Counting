@@ -1,6 +1,8 @@
 import numpy as np
 import sys
+import argparse
 import torch
+import wandb
 from torch.utils.data import Subset, DataLoader
 from model.model import Model
 from utils.data_loader import TreeDataset
@@ -9,7 +11,7 @@ from utils.trainer import Trainer
 from utils.logger import get_logger
 from utils.visualisations import plot_sample_images
 
-def run(working_dir: str, output_dir: str,  epochs: int):
+def run(working_dir: str, output_dir: str, epochs: int):
     """Main function to run the training.
     
     Args:
@@ -166,3 +168,22 @@ def run(working_dir: str, output_dir: str,  epochs: int):
     return images, predictions, targets
 
 
+
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description="Palm Tree Counter")
+    parser.add_argument("--data_dir", type=str, required=True, help="Path to the data directory")
+    parser.add_argument("--output_dir", type=str, required=True, help="Path to the output directory")
+    parser.add_argument("--epochs", type=int, default=50, help="Number of epochs to train")
+    parser.add_argument("--wandb_key", type=str, required=True, help="Weights & Biases API key")
+    
+    args = parser.parse_args()
+
+    # Login to wandb
+    wandb.login(key=args.wandb_key)
+
+    # Start training
+    test_data, predictions, target = run(args.data_dir, args.output_dir, args.epochs)
+
+    # Log the results
+    plot_sample_images(test_data, target, predictions, confidence=0.7, num_images=4)
