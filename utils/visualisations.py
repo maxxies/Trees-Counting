@@ -25,9 +25,9 @@ def plot_sample_images(dataloader, num_images=4):
         # Plot the bounding boxes and labels
         for box, label in zip(boxes, labels):
             xmin, ymin, xmax, ymax = box
-            rect = patches.Rectangle((xmin, ymin), xmax - xmin, ymax - ymin, linewidth=1, edgecolor=colors[label.item()], facecolor='none')
+            rect = patches.Rectangle((xmin, ymin), xmax - xmin, ymax - ymin, linewidth=1, edgecolor=colors[label.item() - 1], facecolor='none')
             axes[i].add_patch(rect)
-            axes[i].text(xmin, ymin, f"{label.item()}", color=colors[label.item()], fontsize=12)
+            axes[i].text(xmin, ymin, f"{label.item()}", color=colors[label.item() - 1], fontsize=12)
 
         axes[i].axis('off')
 
@@ -61,9 +61,9 @@ def plot_comparison_images(images, targets, predictions, confidence = 0.7, num_i
         axes[i][0].imshow(img)
         for box, label in zip(targets[i]['boxes'].cpu(), targets[i]['labels'].cpu()):
             xmin, ymin, xmax, ymax = box
-            rect = patches.Rectangle((xmin, ymin), xmax - xmin, ymax - ymin, linewidth=2, edgecolor=colors[0], facecolor='none')
+            rect = patches.Rectangle((xmin, ymin), xmax - xmin, ymax - ymin, linewidth=2, edgecolor=colors[label.item() - 1], facecolor='none')
             axes[i][0].add_patch(rect)
-            axes[i][0].text(xmin, ymin, f"{label.item()}", color=colors[0], fontsize=12)
+            axes[i][0].text(xmin, ymin, f"{label.item()}", color=colors[label.item() - 1], fontsize=12)
         axes[i][0].set_title("Ground Truth")
         axes[i][0].axis('off')
 
@@ -73,9 +73,9 @@ def plot_comparison_images(images, targets, predictions, confidence = 0.7, num_i
             if score < confidence:
                 continue
             xmin, ymin, xmax, ymax = box
-            rect = patches.Rectangle((xmin, ymin), xmax - xmin, ymax - ymin, linewidth=2, edgecolor=colors[1], facecolor='none')
+            rect = patches.Rectangle((xmin, ymin), xmax - xmin, ymax - ymin, linewidth=2, edgecolor=colors[label.item() - 1], facecolor='none')
             axes[i][1].add_patch(rect)
-            axes[i][1].text(xmin, ymin, f"{label.item()}", color=colors[1], fontsize=12)
+            axes[i][1].text(xmin, ymin, f"{label.item()}", color=colors[label.item() - 1], fontsize=12)
         axes[i][1].set_title("Predictions")
         axes[i][1].axis('off')
 
