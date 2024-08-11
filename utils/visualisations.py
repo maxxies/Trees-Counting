@@ -3,7 +3,7 @@ import matplotlib.patches as patches
 from utils.config import Config
 import os
 
-def plot_sample_images(dataloader, num_images=4):
+def plot_sample_images(dataloader, output_dir, num_images=4):
     """Plot a sample of images with their bounding boxes and labels.
 
     Args:
@@ -36,14 +36,14 @@ def plot_sample_images(dataloader, num_images=4):
         if i == num_images - 1:
             break
 
-    plt.savefig(os.path.join(Config.config['trainer']['save_dir'], "visualisation/sample_images.png"))
+    plt.savefig(os.path.join(output_dir, "visualisation/sample_images.png"))
     plt.close()
     # plt.tight_layout()
     # plt.show()
 
 
 
-def plot_comparison_images(images, targets, predictions, confidence = 0.7, num_images=4):
+def plot_comparison_images(images, targets, predictions, output_dir, confidence = 0.7, num_images=4):
     """Plot images with ground truth and predicted bounding boxes side by side.
 
     Args:
@@ -83,5 +83,5 @@ def plot_comparison_images(images, targets, predictions, confidence = 0.7, num_i
         axes[i][1].set_title("Predictions")
         axes[i][1].axis('off')
 
-    plt.savefig(os.path.join(Config.config['trainer']['save_dir'], "visualisation/predictions.png"))
+    plt.savefig(os.path.join(output_dir, "visualisation/predictions.png"))
     plt.close()

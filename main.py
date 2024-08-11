@@ -120,7 +120,7 @@ def run(working_dir: str, output_dir: str, epochs: int):
    
     # Plot sample images
     logger.info("Plotting sample images")
-    plot_sample_images(train_loader)
+    plot_sample_images(train_loader, output_dir)
 
     # Build model architecture
     model = Model(cfg.config["data"]["num_classes"]).get_model()
@@ -186,4 +186,4 @@ if __name__ == "__main__":
     test_data, predictions, target = run(args.data_dir, args.output_dir, args.epochs)
 
     # Log the results
-    plot_sample_images(test_data, target, predictions, confidence=0.7, num_images=4)
+    plot_sample_images(test_data, target, predictions, args.output_dir, confidence=0.7, num_images=4)
