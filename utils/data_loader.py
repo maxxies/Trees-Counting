@@ -55,7 +55,7 @@ class TreeDataset(Dataset):
         annotations = self.annotation_df[self.annotation_df['filename'] == self.imgs[idx]]
         bboxes = annotations[['xmin', 'ymin', 'xmax', 'ymax']].values
         bboxes =  tv_tensors.BoundingBoxes(bboxes, format="XYXY", canvas_size=F.get_size(img))
-        labels = annotations['class'].apply(lambda x: 0 if x == 'Palm' else 1).values
+        labels = annotations['class'].apply(lambda x: 1 if x == 'Palm' else 2).values
         labels = torch.tensor(labels, dtype=torch.int64)
 
         # Wrap image into torchvision tv_tensors

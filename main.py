@@ -1,7 +1,6 @@
 import numpy as np
 import sys
 import torch
-import datetime
 from torch.utils.data import Subset, DataLoader
 from model.model import Model
 from utils.data_loader import TreeDataset
@@ -10,7 +9,7 @@ from utils.trainer import Trainer
 from utils.logger import get_logger
 from utils.visualisations import plot_sample_images
 
-def run(working_dir: str, epochs: int):
+def run(working_dir: str, output_dir: str,  epochs: int):
     """Main function to run the training.
     
     Args:
@@ -29,7 +28,7 @@ def run(working_dir: str, epochs: int):
             "test_images_path": f"{working_dir}/test/",
             "train_labels_path": f"{working_dir}/train_labels.csv",
             "test_labels_path": f"{working_dir}/test_labels.csv",
-            "test_size": 0.2,
+            "test_size": 0.15,
             "num_classes": 3, # 3 classes: background, tree, and palm tree
             "batch_size": 8,
         },
@@ -48,7 +47,7 @@ def run(working_dir: str, epochs: int):
         },
         "trainer": {
             "epochs": epochs,
-            "save_dir": "saved/",
+            "save_dir": f"{output_dir}/saved/",
             "verbosity": 0,
         },
         "logger": {
@@ -119,7 +118,7 @@ def run(working_dir: str, epochs: int):
    
     # Plot sample images
     logger.info("Plotting sample images")
-    plot_sample_images(train_loader, num_images=6)
+    plot_sample_images(train_loader)
 
     # Build model architecture
     model = Model(cfg.config["data"]["num_classes"]).get_model()
@@ -156,14 +155,10 @@ def run(working_dir: str, epochs: int):
         train_loader=train_loader,
         val_loader=val_loader,
         test_loader=test_loader,
-        config=cfg.config,
+        config=cfg,
     )
 
     # Start training
     trainer.train()
 
-    # Test the model
-    predictions, targets = trainer.test()
 
-    # Return the test dataset and predictions
-    return test_dataset, predictions, targets

@@ -1,12 +1,11 @@
-import torch
-from utils.logger import get_logger
-from utils.config import Config
-from torchvision.ops import box_iou
-from torchmetrics.detection import MeanAveragePrecision
-from sklearn.metrics import  accuracy_score
-import wandb
 from datetime import datetime
 import time
+import os
+import wandb
+import torch
+from torchmetrics.detection import MeanAveragePrecision
+from utils.logger import get_logger
+from utils.config import Config
 
 class Trainer:
     """Class to train Faster R-CNN model with PyTorch.
@@ -54,7 +53,8 @@ class Trainer:
         self.train_loader = train_loader
         self.val_loader = val_loader
         self.test_loader = test_loader
-        self.config = config
+        self.config = config.config
+        self.save_dir = config.save_dir
         self.logger = get_logger(
             name="trainer", verbosity=config["trainer"]["verbosity"]
         )
@@ -181,6 +181,7 @@ class Trainer:
         self.model.eval()
         all_predictions = []
         all_targets = []
+        all_images = []
         
         with torch.no_grad():
             for images, targets in self.test_loader:
@@ -200,13 +201,14 @@ class Trainer:
 
                 all_predictions.extend(preds)
                 all_targets.extend(targs)
+                all_images.extend(images)
                 
         # Calculate metrics
         map_score = self.calculate_map(all_predictions, all_targets, "Test")
                 
         self.logger.info(f"Test mAP: {map_score:.4f}")
         
-        return all_predictions, all_targets
+        return all_images, all_predictions, all_targets
 
    
     def calculate_map(self, predictions, targets, eval_type,  iou_threshold=0.5):
@@ -224,7 +226,7 @@ class Trainer:
 
     def save_model(self, metric_name: str):
         """Save the model."""
-        model_path = self.config["trainer"]["save_dir"] + f"models/{metric_name}.pth"
+        model_path = os.path.join(self.save_dir, f"{metric_name}.pth")
         torch.save(self.model, model_path)
         
         # Save the model as an artifact

@@ -3,5 +3,4 @@ torchvision
 torchmetrics
 pandas
 wandb
-scikit-learn
 opencv-python
