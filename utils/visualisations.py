@@ -36,7 +36,7 @@ def plot_sample_images(dataloader, output_dir, num_images=4):
         if i == num_images - 1:
             break
 
-    plt.savefig(os.path.join(output_dir, "visualisation/sample_images.png"))
+    plt.savefig(os.path.join(output_dir, "sample_images.png"))
     plt.close()
     # plt.tight_layout()
     # plt.show()
@@ -83,5 +83,5 @@ def plot_comparison_images(images, targets, predictions, output_dir, confidence 
         axes[i][1].set_title("Predictions")
         axes[i][1].axis('off')
 
-    plt.savefig(os.path.join(output_dir, "visualisation/predictions.png"))
+    plt.savefig(os.path.join(output_dir, "predictions.png"))
     plt.close()
