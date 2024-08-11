@@ -4,3 +4,5 @@ torchmetrics
 pandas
 wandb
 opencv-python
+pycocotools
+torchmetrics[detection]
