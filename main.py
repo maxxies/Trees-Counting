@@ -161,4 +161,8 @@ def run(working_dir: str, output_dir: str,  epochs: int):
     # Start training
     trainer.train()
 
+    images, predictions, targets = trainer.test()
+
+    return images, predictions, targets
+
 
