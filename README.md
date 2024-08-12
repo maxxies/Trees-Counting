@@ -14,6 +14,10 @@ This project focuses on detecting and classifying trees (Palm and Non-Palm) usin
 |   ├── logger.py
 |   ├── trainer.py
 |   └── visualisations.py
+├── visualisations
+│   ├── sample_images.png
+│   ├── 50_epochs_predictions.png
+│   └── 70_epochs_predictions.png
 ├── .gitignore
 ├── Dockerfile
 ├── entrypoint.sh
@@ -25,6 +29,7 @@ This project focuses on detecting and classifying trees (Palm and Non-Palm) usin
 
 - **utils/**: Utility scripts, including the trainer and dataset loader.
 - **models/**: Model architecture for Faster R-CNN.
+- **visualisations/**: Sample images and model predictions.
 - **main.py**: Main script for training and evaluating the model.
 - **Dockerfile**: Docker configuration for containerized training.
 - **README.md**: Project documentation.
@@ -85,11 +90,10 @@ from utils.visualisations import plot_sample_images
 plot_comparison_images(images, target, predictions,num_images=10)
 ```
 
-
 ### Training with Docker
 1. Pull the Docker image:
 ```bash
-docker pull <image_name>
+docker pull maxxies/palm-tree-counter:latest
 ```
 
 2. Run the Docker container:
@@ -104,6 +108,39 @@ docker run -it --gpus all \
 
 ## Model Monitoring with Weights and Biases
 Weights and Biases was used to monitor the training process and log metrics. You can view the project dashboard [here](https://wandb.ai/ahiamadzormaxwell7/counting-trees).
+
+
+## Evaluation
+
+The model was trained to distinguish between:
+- **1**: Palm trees
+- **2**: Non-Palm trees
+
+### Sample Images from the Dataset:
+Below are some sample images from the dataset with their respective bounding boxes:
+
+![Sample](visualisations/sample_images.png)
+
+### Model Performance
+
+1. **Training for 50 Epochs:**
+   - The model was trained for 50 epochs and achieved the following results on the test set:
+     - **mAP** (mean Average Precision): 0.3971
+     - **mAP_50** (mean Average Precision at IoU=0.50): 0.70
+    
+   - Below is a visualization of the model's predictions after 50 epochs:
+
+   ![50 epochs](visualisations/50_epochs_predictions.png)
+
+2. **Training for 70 Epochs:**
+   - The model was trained for 70 epochs and achieved the following results on the test set:
+     - **mAP** (mean Average Precision): 0.3972
+     - **mAP_50** (mean Average Precision at IoU=0.50): 0.71
+   - Below is a visualization of the model's predictions after 70 epochs:
+
+   ![70 epochs](visualisations/70_epochs_predictions.png)
+
+Note: The model's training and validation performances can be seen on the Weights and Biases platform.
 
 ## License
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
