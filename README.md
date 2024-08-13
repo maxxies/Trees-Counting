@@ -1,4 +1,4 @@
-# Aya-Trees-Counting
+# Trees-Counting
 
 This project focuses on detecting and classifying trees (Palm and Non-Palm) using a Faster R-CNN model. The dataset consists of annotated images with bounding boxes that identify the location and type of trees.
 
@@ -60,7 +60,7 @@ The training process optimizes several loss components:
 
 1. Clone the repository:
 ```bash
-git clone https://github.com/maxxies/Aya-Trees-Counting.git 
+git clone https://github.com/maxxies/Trees-Counting.git
 ```
 2. Install the required packages:
 ```bash
