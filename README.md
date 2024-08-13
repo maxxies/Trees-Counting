@@ -60,7 +60,7 @@ The training process optimizes several loss components:
 
 1. Clone the repository:
 ```bash
-git clone <repo_url>
+git clone https://github.com/maxxies/Aya-Trees-Counting.git 
 ```
 2. Install the required packages:
 ```bash
@@ -75,8 +75,9 @@ EPOCHS = "<number_of_epochs>"
 ```
 
 4. Set up Weights and Biases for logging:
-```bash
-wandb login
+```python
+import wandb
+wandb.login(key="your_wandb_api_key")
 ```
 
 5. Run the training script:
@@ -147,7 +148,7 @@ Note: The model's training and validation performances can be viewed on the Weig
 
 ## Deployed Model
 The best model was deployed on the Hugging Face Spaces platform and Streamlit for inference.
-The deployed model can be accessed via the following link: [click here](https://huggingface.co/spaces/Mawube/tree-counter).
+The deployed model can be accessed via the following link: [Click here](https://huggingface.co/spaces/Mawube/tree-counter).
 
 ## License
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
