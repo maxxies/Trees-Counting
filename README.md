@@ -70,6 +70,7 @@ pip install -r requirements.txt
 3. Set directory paths and epochs:
 ```python   
 DATA_DIR = "<your_data_directory>"
+OUTPUT_DIR = "<output_directory>"
 EPOCHS = "<number_of_epochs>"
 ```
 
@@ -82,14 +83,14 @@ wandb login
 ```python
 import main
 
-test_data, predictions, target = main.run(DATA_DIR, EPOCHS)
+test_data, predictions, targets = main.run(DATA_DIR, OUTPUT_DIR, EPOCHS)
 ```
 
 6. Evaluate the model:
 ```python
 from utils.visualisations import plot_sample_images
 
-plot_comparison_images(images, target, predictions,num_images=10)
+plot_comparison_images(images, targets, predictions, num_images=10)
 ```
 
 ### Training with Docker
@@ -142,10 +143,11 @@ Below are some sample images from the dataset with their respective bounding box
 
    ![70 epochs](visualisations/70_epochs_predictions.png)
 
-Note: The model's training and validation performances can be seen on the Weights and Biases platform.
+Note: The model's training and validation performances can be viewed on the Weights and Biases platform indicated.
 
 ## Deployed Model
-The deployed model can be accessed via the following link: [Model Deployment](https://huggingface.co/spaces/Mawube/tree-counter).
+The best model was deployed on the Hugging Face Spaces platform and Streamlit for inference.
+The deployed model can be accessed via the following link: [click here](https://huggingface.co/spaces/Mawube/tree-counter).
 
 ## License
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
