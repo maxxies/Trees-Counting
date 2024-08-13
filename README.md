@@ -54,6 +54,7 @@ The training process optimizes several loss components:
 - PyTorch
 - Docker (for containerized deployment)
 - wandb (Weights and Biases for logging)
+- GPU (for faster training)
 
 ### Training the Model
 
@@ -82,6 +83,7 @@ wandb login
 import main
 
 test_data, predictions, target = main.run(DATA_DIR, EPOCHS)
+```
 
 6. Evaluate the model:
 ```python
@@ -93,7 +95,7 @@ plot_comparison_images(images, target, predictions,num_images=10)
 ### Training with Docker
 1. Pull the Docker image:
 ```bash
-docker pull maxxies/palm-tree-counter:latest
+docker pull maxxies/palm-tree-counter:1.0
 ```
 
 2. Run the Docker container:
@@ -103,7 +105,7 @@ docker run -it --gpus all \
     -v /path/to/save/output:/app/output \
     -e EPOCHS=50 \
     -e WANDB_API_KEY=your_wandb_api_key \
-    palm-tree-counter
+    maxxies/palm-tree-counter:1.0
 ```
 
 ## Model Monitoring with Weights and Biases
@@ -141,6 +143,9 @@ Below are some sample images from the dataset with their respective bounding box
    ![70 epochs](visualisations/70_epochs_predictions.png)
 
 Note: The model's training and validation performances can be seen on the Weights and Biases platform.
+
+## Deployed Model
+The deployed model can be accessed via the following link: [Model Deployment](https://huggingface.co/spaces/Mawube/tree-counter).
 
 ## License
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.

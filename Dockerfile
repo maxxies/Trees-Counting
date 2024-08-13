@@ -8,6 +8,8 @@ RUN apt-get update && apt-get install -y \
     python3.10 \
     python3.10-distutils \
     wget \
+    libgl1-mesa-glx \
+    libglib2.0-0 \
     && rm -rf /var/lib/apt/lists/*
 
 # Set Python 3.10 as the default Python
